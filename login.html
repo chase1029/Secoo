@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>登录</title>
+<link rel="stylesheet" href="css/commonality.css">
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+<!-- header -->
+<div id="header">
+		<div class="warpper-header">
+			<img src="img/61.jpg" style="margin-top:5px;" />
+			<ul>
+				<li class="li_one"><a href="#">寺库首页</a></li>
+				<li class="li_one"><a href="#">收藏寺库</a></li>
+				<li class="li_one"><a href="#">寺库APP</a></li>
+			</ul>
+		</div>
+	</div>
+<!-- section -->
+<div id="section">
+	
+	<div class="section-right">
+		<h1>欢迎登录</h1>
+		<input style="float:left " id="userName" type="text" placeholder="用户名/手机号/邮箱" />
+			<span style="display:block;margin-top:24px;width:30px;height:30px;float:right;margin-right:12px;" id="spanId">
+			</span>
+		<input id="userPass" type="password" placeholder="密码" />
+			<span style="display:block;margin-top:24px;width:30px;height:30px;float: right;margin-right:12px;" id="spanId1">
+			</span><br/>
+		<input type="checkbox" />
+		<i class="I">记住账号</i>
+		<input id="btn01" type="button" value="立即登录" />
+		<p>使用合作网站账号登录</p>
+		<span class="Span">
+			<a href="#">
+				<img src="img/62.jpg"/><i class="one">QQ</i>
+			</a>
+			<a href="#">
+				<img src="img/63.jpg"/><i class="one">微信</i>
+			</a>
+		</span>
+		<ol style="font-size:14px;margin-top:20px;margin-left:36px;color:#999;">还不是寺库会员?
+			<a style="font-size:14px;color:red;" href="register.html">免费注册
+			</a>
+			<a class="Psd" href="#">忘记密码？</a>
+		</ol>
+	</div>
+</div>			
+<!-- footer -->
+<div class="footer">
+	<ul class="footer_ul">
+		<li class="footer_li">
+			<a>新手指南</a>
+			<a>付款方式</a>
+			<a>物流配送</a>
+			<a>售后服务</a>
+		</li>
+		<li class="footer_li">
+			<a>寺库微博</a>
+			<a>友情链接</a>
+			<a>奢侈品热词</a>
+		</li>
+		<li class="footer_li">
+			<a>加入寺库</a>
+			<a>联系我们</a>
+			<a>关于寺库</a>
+			<a>帮助中心</a>	
+		</li>
+		<li class="footer_li">
+			<a>寺库奢侈品养护</a>
+			<a>寺库招商</a>
+			<a>寺库加盟店</a>
+			<a>Investors</a>	
+		</li>
+		<p class="footer_one">
+			<span>统一社会信用代码：91110102689248179k</span>
+			<a><img src="img/pcfooterbatb.png"/>京公安备11010102001392</a>
+			<span>京ICP证110119号 京ICP备09084709号-3</span>
+			<span>ISO9001中国质量管理体系认证</span>
+		</p>
+		<p class="footer_two">
+			COPYRIGHT &copy; 2010-2017 北京寺库商贸有限公司 版权所有
+		</p>
+		<div class="footer_img">
+			<img src="img/x1.jpg"/>
+			<img src="img/x2.jpg"/>
+			<img src="img/x3.jpg"/>
+			<img src="img/x4.jpg"/>
+			<img src="img/x5.jpg"/>
+		</div>
+	</ul>
+</div>
+</body>
+</html>
+<script type="text/javascript" src="js/jquery-1.8.3.min.js" ></script>
+<script type="text/javascript">
+window.onload=function(){
+var istrue=true;
+    istrue=false;
+document.getElementById("userName").onblur=function(){
+		var str=document.getElementById("userName").value;	
+		console.log(str);
+//判断用户输入的是不是邮箱
+			var reg = /(^[\u4e00-\u9fa5]{2,4}$)|(^1[0-9]{10}$)|(^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$)/g
+			if(reg.test(str)){
+				document.getElementById("spanId").innerHTML="<img src='img/67.png' />";
+				istrue=true;
+			}else{
+				document.getElementById("spanId").innerHTML="<img src='img/66.png' />";
+				istrue=false;
+			};
+}
+document.getElementById("userPass").onblur=function(){
+	var str1=document.getElementById("userPass").value;	
+	var reg = /^[a-zA-Z]\w{5,17}$/g
+		if(reg.test(str1)){
+				document.getElementById("spanId1").innerHTML="<img src='img/67.png' />";
+				istrue=true;
+			}else{
+				document.getElementById("spanId1").innerHTML="<img src='img/66.png' />";
+				istrue=false;
+			};
+}
+document.getElementById("btn01").onclick=function(){
+	var Name=document.getElementById("userName").value;
+	var pass=document.getElementById("userPass").value;
+	var date=new Date();
+	date.setDate(date.getDate()+2);
+	document.cookie="uaername+="+Name+"; expires="+date.toGMTString();
+	document.cookie="userpass+="+pass+"; expires="+date.toGMTString();
+
+	var str=document.cookie;
+	var arr = str.split("; ");
+	var index=-1;
+		for(var i=0;i<arr.length;i++){
+			if(arr[i].indexOf("uaername")==0){
+			index = i;
+			break;
+			}
+		}
+if(index==-1){
+	alert("sja")
+	}else{
+		alert(arr[index].substring("uaername=".length));
+	}
+	if(istrue==false && istrue==false){
+		alert("请重新输入")
+	}else{
+		console.log("输入正确")
+	}
+$.post("loginCheck.php",
+		{
+			"userName":$("#userName").val(),
+			"userPass":$("#userPass").val()
+		},
+		function(str){
+			if(str=="1"){
+				//保存cookie
+				location.href="index.html";
+			}else{
+				alert("用户名或者密码错误，登录失败！");
+			}
+			
+		}
+);
+}
+}
+</script>

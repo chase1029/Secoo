@@ -1,0 +1,600 @@
+var bdtext,bddesc,bdurl,bdpic;
+$(function(){
+	$("#comment_show").on("mouseover", ".comment_share", function(){
+		$(this).children(".share_c").show();
+		$(this).parents("dl").css("z-index","1");
+		bdtext=$.trim($(".proName").text()) + " " + $(this).siblings(".pl_goodsxx").text();
+		bddesc=$(this).parents(".pl_photos").siblings(".d_cont").text();
+		bdurl=$(this).siblings(".pl_goodsxx").children("a").attr("href");
+		bdpic=$(this).siblings(".pl_photos_x").children("li").eq(0).children("img").attr("src");
+		window._bd_share_config = {
+			common : {
+				bdText : bdtext,	
+				bdDesc : bddesc,	
+				bdUrl : bdurl, 	
+				bdPic : bdpic,
+				onBeforeClick:function(cmd,config){
+					return {
+						bdText : bdtext,	
+						bdDesc : bddesc,	
+						bdUrl : bdurl, 	
+						bdPic : bdpic
+					}
+				}
+			},
+			share : [{
+				"bdSize" : 16
+			}]
+		}
+		with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+	});
+	$("#comment_show").on("mouseout", ".comment_share", function(){
+		$(this).children(".share_c").hide();
+		$(this).parents("dl").css("z-index","");
+	});
+	$("#shareProduct").mouseover(function(){
+		$(this).find(".share_c").show();
+		window._bd_share_config = {
+			common : {
+				bdText : $("#shareProductText").val(),
+				bdPic : $("#shareProductPic").val()
+			},
+			share : [{
+				"bdSize" : 16
+			}]
+		}
+		with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+	});
+	$("#shareProduct").mouseout(function() {
+		$(this).find(".share_c").hide();
+	});
+})
+
+$(function(){
+	var getCommentflag = true;
+	$(window).scroll(function(){
+		if($(this).scrollTop()>$("#detail_comment").offset().top-$(window).height()){
+			if(getCommentflag){
+				showComment(0, 0, 1, function(comments) {
+					if (comments == undefined || comments.length == 0) {
+						showComment(0, 1, 1);
+					}
+				});
+				var vendorId = $("#vendorId").val();
+				if (vendorId && Number(vendorId) != 1) {
+					showCurrentBrandCount();
+				} else {
+					$("#currentBrandCommentCount").parent().hide();
+				}
+				getCommentflag = false;
+			}
+		}
+	});
+	$("#commentCount").html("该商品评价（0）");
+	
+	//扫描二维码下载
+	$("body").on('mouseover','.pl_client',function(){
+		$(this).children("em").show();
+	});
+	$("body").on('mouseout','.pl_client',function(){
+		$(this).children("em").hide();
+	});
+	//评价
+	$("#commentCount").click(function() {
+		showComment(0,0,1);
+		$("#allCommentCount").parent().addClass("on");
+		$("#allImgCommentCount").parent().removeClass("on");
+		$("html,body").animate({scrollTop:$("#detail_comment").offset().top},200);
+	});
+	$("#currentBrandCommentCount").click(function() {
+		showComment(0,1,1);
+		$("#allCommentCount").parent().addClass("on");
+		$("#allImgCommentCount").parent().removeClass("on");
+		$("html,body").animate({scrollTop:$("#detail_comment").offset().top},200);
+	});
+	//全部评价
+	$("#allCommentCount").click(function() {
+		$(this).parent().addClass("on");
+		$("#allImgCommentCount").parent().removeClass("on");
+		if ($("#commentCount").parent().hasClass("on")) {
+			showComment(0,0,1);
+		} else {
+			showComment(0,1,1);
+		}
+		
+	});
+	//有图评价
+	$("#allImgCommentCount").click(function() {
+		$(this).parent().addClass("on");
+		$("#allCommentCount").parent().removeClass("on");
+		if ($("#commentCount").parent().hasClass("on")) {
+			showComment(1,0,1);
+		} else {
+			showComment(1,1,1);
+		}
+	});
+});
+
+//格式化时间
+var commentDataFormat = function(time){
+	 var  dateTime  = new Date(time);
+	 var year = dateTime.getFullYear();
+	 var month = dateTime.getMonth()+1;//js从0开始取 
+	 var date = dateTime.getDate(); 
+	 var hour = dateTime.getHours(); 
+	 var minutes = dateTime.getMinutes(); 
+	 var second = dateTime.getSeconds();
+	 if(month<10){
+		 month = "0" + month;
+	 }
+	 if(date<10){
+		 date = "0" + date;
+	 }
+	 if(hour <10){
+		 hour = "0" + hour;
+	 }
+	 if(minutes <10){
+		 minutes = "0" + minutes;
+	 }
+	 if(second <10){
+		 second = "0" + second ;
+	 }	
+	 //year =  year.toString().substring(2);
+	 year =  year.toString();
+	 var time1 = year+"/"+month+"/"+date;
+	 var time2 = hour+":"+minutes+":"+second;
+	 var date  = time1+" "+time2;
+	 return date;
+};
+
+var pariseArr = new Array();
+var clickPraise = function(commentId,praiseCount){
+	var clickPraiseUrl = "http://comment.secoo.com/comment/comment.jsp?process=6&commentId="+commentId;
+	if(pariseArr.indexOf(commentId)  != -1){
+		$("#praise_"+commentId).show();
+		$("#praise_"+commentId).delay(1500).hide(0);	
+	}
+		$.ajax({
+			type : "get", 
+			dataType:"jsonp",
+			url:clickPraiseUrl,
+			async:false,
+			success:function(data){
+				if(data.status == 0){
+						if(pariseArr.indexOf(commentId)  == -1){
+							$("#praiseCount_"+commentId).html("（"+(praiseCount+1)+"）");
+							pariseArr.push(commentId);
+						}
+				}else if (data.status == 2){
+					$("#praise_"+commentId).show();
+					$("#praise_"+commentId).delay(1500).hide(0);	
+				}
+			}
+	});
+};	
+var shareComment = function(commentId, dom) {
+	$.ajax({
+		type: "get",
+		dataType: "jsonp",
+		url: "http://comment.secoo.com/comment/comment_share.jsp?cid="+commentId, 
+		success: function(resposne) {
+			if (resposne.rp_result.recode == 0) {
+				$(dom).prev().find("a").html(response.rp_result.shareCount);
+			}
+			
+		}
+	});
+}
+var commentObj = {
+	currentBrandCommentCount : 0,
+	currentBrandImgCommentCount: 0,
+	currentProductCommentCount: 0,
+	currentProductImgCommentCount: 0
+}
+var showCurrentBrandCount = function() {
+	var pid = $("#productIdVal").val();
+	var productBrandId = $("#tx_brandid").val();
+	var productCategoryId = $("#categoryid").val();
+	$.ajax({
+		type: "get",
+		dataType: "jsonp",
+		url: "http://comment.secoo.com/comment/comment.jsp?process=8&productId="+pid+"&productBrandId="+productBrandId+"&productCategoryId="+productCategoryId, 
+		success: function(response) {
+			if (response.status == 0) {
+				$("#currentBrandCommentCount").html("同品牌评价（"+response.data.totalCount+"）");
+				if (response.data.totalCount > 0) {
+					$("#detail_comment").show();
+				}
+				commentObj.currentBrandCommentCount = response.data.totalCount;
+				commentObj.currentBrandImgCommentCount = response.data.hasImgCount;
+			}
+		}
+	});
+}
+/**
+ *	  flag 0= 全部评价  , 1=有图评价
+ *    type 0: 本商品评价 1:同分类同品牌评价
+ *    page 页数
+ *  
+*/
+var  showComment = function (flag, type, page, callback){
+	var pid = $("#productIdVal").val(); //当前商品ID
+	var productBrandId = $("#tx_brandid").val();
+	var productCategoryId = $("#categoryid").val();
+	var commentHtml= "";
+	var commentUrl = "";
+	if (type == 0) {
+		$("#commentSumCore").closest(".dc_score").show();
+		$("#commentSumCore").closest(".dc_cont").removeClass("dc_cont_none");
+		commentUrl = "http://comment.secoo.com/comment/comment.jsp?process=5&currPage="+page+"&pageSize=8&isImg="+flag+"&productId="+pid+"&productBrandId="+productBrandId+"&productCategoryId="+productCategoryId;
+	} else {
+		$("#commentSumCore").closest(".dc_score").hide();
+		$("#commentSumCore").closest(".dc_cont").addClass("dc_cont_none");
+	    commentUrl = "http://comment.secoo.com/comment/comment.jsp?process=7&currPage="+page+"&pageSize=8&isImg="+flag+"&productId="+pid+"&productBrandId="+productBrandId+"&productCategoryId="+productCategoryId;
+	}
+	
+	if(type == 0 ){
+		$(".dc_title ul li").removeClass("on").eq(0).addClass("on");
+	}else{
+		$(".dc_title ul li").removeClass("on").eq(1).addClass("on");
+	}
+
+	$.ajax({
+			type : "get", 
+			dataType:"jsonp",
+			url:commentUrl,
+			async:false,
+			success:function(data){
+				if (data.status != 0) {
+					$("#comment_show").html("");
+				} else if(data.status == 0 && data.data != null){
+				 	var comments = data.data.productCommentList;
+					var productGrade = parseFloat(data.data.productGrade).toFixed(1);
+					var productGradePercent = parseFloat(productGrade/5)*100;	
+					var imgCount = 0;
+					if(flag == 0){
+						imgCount = data.data.imgCount;
+					}
+					var pageTotal = data.data.page.totalPage;
+					var allCount =  data.data.page.sum;
+					if (type == 0 && flag == 0) {
+						commentObj.currentProductCommentCount = data.data.page.sum;
+						commentObj.currentProductImgCommentCount = data.data.imgCount;
+					}
+					if (type == 0 && flag == 1) {
+						commentObj.currentProductImgCommentCount = data.data.page.sum;
+					}
+					if(flag == 0 && type == 0){
+						$("#commentSumCore").html("<span class=\"star4\"><em style=\"width:"+productGradePercent+"%;\"></em></span><i><b>"+productGrade+"</b> / 5.0</i>");
+					}
+					
+					for (var i = 0 ; i < comments.length; i++) {
+						var comment = comments[i];
+						var commentId = comment.id;
+						var proId = comment.productId;
+						var productName = comment.productName;
+						var userName = comment.userName;
+						var isAnonymous = comment.isAnonymous;
+						var userHeadImg = comment.userImg;
+						if(userHeadImg == undefined || userHeadImg =="" ){
+							userHeadImg = "http://pic12.secooimg.com/home/detail/tx.jpg"
+						}
+						
+						var content = comment.content;
+						var grade = parseFloat(comment.grade).toFixed(1);
+						var gradetPercent = parseFloat(grade/5)*100;
+						var source = comment.source;
+						var createDate = commentDataFormat(comment.createDate);
+						var imgs = eval(comment.imgs);
+						var imgsLength = 0;
+						if(imgs != undefined && imgs != null){
+							imgsLength = imgs.length;
+						}
+						var productSpec = comment.productSpec;
+						if(productSpec == undefined || productSpec == null){
+							productSpec = "";
+						}
+						var specArr = productSpec.split(",");
+						var specLen = specArr.length;
+						var specFirst  = specArr[0];
+						var specSecond = "";
+						if(specLen > 1){
+							 specSecond = specArr[1];
+						}
+						var replyContent = comment.replyContent;
+						if(replyContent == undefined || replyContent ==null ){
+							replyContent = "";
+						}
+						var praiseCount = comment.praiseCount;
+						var isShow = comment.isShow;
+						var isSameBrand = 0;
+						if(pid  != proId){
+							isSameBrand = 1;
+						}
+						commentHtml += "    	<dl>";
+						commentHtml += "        	<dt>";
+						commentHtml += "             	<p><img src=\""+userHeadImg+"\"  width=\"50\" height=\"50\" /></p>";
+					
+						if(isAnonymous == "0"){
+														commentHtml += "<p class=\"name\"    title=\""+userName+"\" >"+userName+"</p>";
+						}else{
+														commentHtml += "<p class=\"name\">"+userName+"</p>";
+						}
+						
+						commentHtml += "            </dt>";
+						commentHtml += "            <dd>";
+						commentHtml += "            	<div class=\"pl_detail\">";
+						commentHtml += "                	<div class=\"d_pf clearfix\">";
+						commentHtml += "                     	<div class=\"fl star_x\"><span class=\"star4\"><em style=\"width:"+gradetPercent+"%;\"></em></span>"+grade+"</div>";
+						commentHtml += "                         <div class=\"fr\">";
+						if(source == 1){
+								commentHtml += "                        	<span class=\"pl_client\">来自网页评论</span><i>|</i>";
+						}else if(source == 2){
+							if (comment.sourceDevice) {
+								commentHtml += "                        	<span class=\"pl_client\">来自" + comment.sourceDevice;
+							} else {
+								commentHtml += "                        	<span class=\"pl_client\">来自寺库Android客户端";
+							}
+							commentHtml += "                            	<em><img src=\"http://pic12.secooimg.com/home/detail/ewm.gif\" width=\"85\" height=\"85\" /><br />扫描二维码下载</em>";
+							commentHtml += "                            </span><i>|</i>";
+						}else if(source == 3){
+							if (comment.sourceDevice) {
+								commentHtml += "                        	<span class=\"pl_client\">来自" + comment.sourceDevice;
+							} else {
+								commentHtml += "                        	<span class=\"pl_client\">来自寺库IOS客户端";
+							}
+							commentHtml += "                            	<em><img src=\"http://pic12.secooimg.com/home/detail/ewm.gif\" width=\"85\" height=\"85\" /><br />扫描二维码下载</em>";
+							commentHtml += "                            </span><i>|</i>";
+						}else if(source == 4){
+							    commentHtml += "                        	<span class=\"pl_client\">来自移动网页评论</span><i>|</i>";
+						}
+						
+						if(type == 1) {
+							commentHtml += "同品牌评价<i>|</i>";
+						}
+					    commentHtml +=""+createDate;
+						commentHtml += "                        </div>";
+						commentHtml += "                    </div>";
+						commentHtml += "                     <div class=\"d_cont\">"+content+"</div>";
+						commentHtml += "                    <div class=\"pl_photos\">";
+						commentHtml += '<div class="share_icon comment_share" style="display:none;">';
+                        commentHtml += '    <span class="share_t"><a href="###"><i></i>分享（'+comment.shareCount+'）</a></span>';
+                        commentHtml += '    <div class="bdsharebuttonbox share_c" data-tag="share_1" onclick="shareComment('+commentId+', this)">';
+                        commentHtml += '        <a class="bds_tsina" data-cmd="tsina"></a>';
+                        commentHtml += '        <a class="bds_sqq" data-cmd="sqq"></a>';
+                        commentHtml += '        <a class="bds_qzone" data-cmd="qzone" href="#"></a>';
+                        commentHtml += '    </div>';
+                        commentHtml += '  </div>';
+						commentHtml += "                      <span class=\"pl_dianzan pl_dianzan1\"  onclick=\"clickPraise("+commentId+","+praiseCount+");\"><i></i><span id=\"praiseCount_"+commentId+"\">（"+praiseCount+"）</span><em id=\"praise_"+commentId+"\" style=\"display:none\"><span></span>一个评价只能点一次赞哟!</em></span>";
+						if(imgsLength > 0 ){
+							commentHtml += "                      <ul class=\"pl_photos_x\">";
+							for(var j = 0 ; j < imgsLength ; j++ ){
+								var imgUrlSmall = "http://pic.secooimg.com/thumb/58/78/pic1.secoo.com/"+imgs[j] ;
+								var imgUrlBig =   "http://pic.secooimg.com/"+imgs[j] ;
+								commentHtml += "                        <li data-src=\""+imgUrlBig+"\"><img src=\""+imgUrlSmall+"\"><span></span></li>";
+							}
+							commentHtml += "                      </ul>";
+						}
+						
+						commentHtml += "                      <div class=\"pl_photos_d\">";
+						commentHtml += "                        <div class=\"pl_photos_img\">";
+						commentHtml += "                            <a class=\"img_prev\" href=\"javascript:void(0);\"><i></i></a>";
+						commentHtml += "                            <a class=\"img_next\" href=\"javascript:void(0);\"><i></i></a>";
+						commentHtml += "                            <div class=\"img_box\"></div>";
+						commentHtml += "                        </div>";
+						commentHtml += "                        <div class=\"pl_photos_t\">"
+						commentHtml += "                            <a class=\"img_hide\" href=\"javascript:void(0);\">收起</a>|";
+						commentHtml += "                            <a class=\"img_turnleft\" href=\"javascript:void(0);\">向左旋转</a>|";
+						commentHtml += "                            <a class=\"img_turnright\" href=\"javascript:void(0);\">向右旋转</a>";
+						commentHtml += "                        </div>";
+						commentHtml += "                      </div>";
+						commentHtml += "                      <p class=\"pl_goodsxx\">";
+						if(type != 1){
+							commentHtml +=  specFirst;
+							if(specSecond != ""){
+								commentHtml += "<span class=\"marLeft_20\">"+specSecond+"</span>";
+							}
+						}
+					    if(type  == 1){
+                        	  	commentHtml += "  <a href=\"http://item.secoo.com/"+proId+".shtml\">"+productName+"</a> ";
+                        }
+						commentHtml += "</p>";
+						commentHtml += "                    </div>";
+						if(replyContent != ""){
+								commentHtml += "                     <div class=\"pl_kfhf\">客服回复："+replyContent+"</div>";
+						}
+						
+						
+						commentHtml += "                </div>";
+						commentHtml += "            </dd>";
+						commentHtml += "        </dl>";
+				    }	
+				  
+				    var page_html  = "";
+				    if(pageTotal > 1){
+					      page_html  = "<div class=\"comment_page\">";
+						  if(page > 1){
+								page_html += "<a href=\"javascript:void(0);\"  onclick=\"pageComment("+flag+","+type+","+(page-1)+")\" class=\"page_prev\">上一页</a>";
+						  }
+						  if(page > 3){
+							  page_html += "<a href=\"javascript:void(0);\" onclick=\"pageComment("+flag+","+type+",1)\">1</a>";
+						  }
+						  if(page > 4){
+							  page_html += "<span>...</span>";
+						  }
+						  
+						  if(page < 4){  
+							  for(var t = 1; t <= page+2; t++){
+								  if(t < pageTotal){
+									 	if(page == t){
+											page_html += "<a href=\"javascript:void(0);\" class=\"on\">"+(t)+"</a>";
+										}else{
+											page_html += "<a href=\"javascript:void(0);\" onclick=\"pageComment("+flag+","+type+","+(t)+")\">"+(t)+"</a>";
+										}
+								  }	
+							  }
+							  
+						  }else{
+							  for(var t = page-2; t <= page+2; t++){
+								  if(t < pageTotal){
+									 	if(page == t){
+											page_html += "<a href=\"javascript:void(0);\" class=\"on\">"+(t)+"</a>";
+										}else{
+											page_html += "<a href=\"javascript:void(0);\" onclick=\"pageComment("+flag+",+"+type+"+,"+(t)+")\">"+(t)+"</a>";
+										}
+								  }	
+							  }
+						  }
+						  
+						  if((page+3) < pageTotal) {
+							  page_html += "<span>...</span>";
+						  }
+						  
+						  if(page == pageTotal){
+							  page_html += "<a href=\"javascript:void(0);\" class=\"on\">"+(pageTotal)+"</a>";  
+						  }else{
+							  page_html += "<a href=\"javascript:void(0);\"   onclick=\"pageComment("+flag+","+type+","+(pageTotal)+")\" >"+(pageTotal)+"</a>";  
+						  }
+						  
+					      if(page < pageTotal){
+					    	 page_html +="<a href=\"javascript:void(0);\" onclick=\"pageComment("+flag+","+type+","+(page+1)+")\" class=\"page_next\">下一页</a>";
+					      }
+					      
+					     page_html +="</div>";
+					     commentHtml +=  page_html;
+				    } 
+				 	$("#comment_show").html(commentHtml);
+				}
+				if(type == 0){
+					$("#commentCount").html("该商品评价（"+commentObj.currentProductCommentCount+"）");
+					$("#allCommentCount").html("全部（"+commentObj.currentProductCommentCount+"）");
+					$("#allImgCommentCount").html("有图评价（"+commentObj.currentProductImgCommentCount+"）");
+				} if (type == 1) {
+					$("#allCommentCount").html("全部（"+commentObj.currentBrandCommentCount+"）");
+					$("#allImgCommentCount").html("有图评价（"+commentObj.currentBrandImgCommentCount+"）");
+				}
+				if (commentObj.currentProductCommentCount != 0 || commentObj.currentBrandCommentCount != 0) {
+					$("#detail_comment").show();
+				}
+				if (commentObj.currentProductCommentCount == 0) {
+					$("#commentSumCore").html('<span class="star4"><em style="width:0"><em></span>');
+					if (!$("#commentSumCore").next().hasClass("zhpf")) {
+						$("#commentSumCore").after('<div class="fl zhpf">暂无评价</div>');
+					}
+				} else {
+					if ($("#commentSumCore").next().hasClass("zhpf")) {
+						$("#commentSumCore").next().remove();
+					}
+				}
+				if (typeof callback == 'function') {
+					callback(comments);
+				}
+			 },
+			 complete:function(data){
+				 commentEffect();
+			 }	
+		});
+	
+};
+ var commentObj = {
+	currentBrandCommentCount : 0,
+	currentBrandImgCommentCount: 0,
+	currentProductCommentCount: 0,
+	currentProductImgCommentCount: 0
+}
+var pageComment = function (flag, type, page){
+	var comment_show_top=$("#comment_show").offset().top-100;
+	$("html,body").animate({scrollTop:comment_show_top},200);
+	showComment(flag,type,page);
+};
+
+
+//评论相关效果 
+var commentEffect = function (){
+	
+	 /*查看有图片评论*/
+	$(".pl_photos").each(function() {
+		var _this=$(this),photos_x=_this.children(".pl_photos_x"),li=photos_x.find("li"),photos_d=_this.children(".pl_photos_d"),img_hide=photos_d.find(".img_hide"),/*img_open=photos_d.find(".img_open"),*/img_turnleft=photos_d.find(".img_turnleft"),img_turnright=photos_d.find(".img_turnright"),photos_img=photos_d.find(".pl_photos_img"),img_box=photos_d.find(".img_box"),li_this=0,li_new=0,len=li.length,img_w=0,img_h=0,rot=0;
+		li.click(function(){
+			
+			_this.parents("dl").siblings("dl").find(".pl_photos_d").hide();
+			_this.parents("dl").siblings("dl").find(".pl_photos_x").find("li").removeClass("current");
+			
+			if($(this).hasClass("current")){
+				photos_d.hide();
+				photos_x.find("li").removeClass("current");
+			}else{
+				li_new=li.index(this);
+				showImg(li_new);
+				photos_d.show();
+			};
+		})
+		img_hide.click(function(){
+			photos_d.hide();
+			photos_x.find("li").removeClass("current");
+			return false;
+		})
+		img_box.click(function(){
+			photos_d.hide();
+			photos_x.find("li").removeClass("current");
+			return false;
+		})
+		photos_img.find(".img_prev").click(function(){
+			li_this = li.index(_this.find(".pl_photos_x li.current"));
+			li_new = li_this-1;
+			showImg(li_new);
+			return false;
+		})
+		photos_img.find(".img_next").click(function(){
+			li_this = li.index(_this.find(".pl_photos_x li.current"));
+			li_new = li_this+1;
+			showImg(li_new);
+			return false;
+		})
+		photos_img.find(".img_prev,.img_next").hover(
+			function(){
+				$(this).children("i").show();
+			},function(){
+				$(this).children("i").hide();
+			}
+		)
+		function showImg(li_new){
+			li_new==0?photos_img.find(".img_prev").hide():photos_img.find(".img_prev").show();
+			li_new==len-1?photos_img.find(".img_next").hide():photos_img.find(".img_next").show();
+			var img_src=li.eq(li_new).attr("data-src");
+			li.eq(li_new).addClass("current").siblings().removeClass("current");
+			img_box.empty().append('<i></i><img src='+img_src+' />');
+			img_box.find("img").load(function(){
+				var img_this=img_box.find("img");
+				var img_w=img_this.width();
+				if(img_w>340){
+					img_box.find("img").width(340);
+				}
+			});
+		}
+		function myRight(img){
+			rot +=1;
+			img.removeClass().addClass("rot"+rot);
+			if(rot === 3){
+				rot = -1;	
+			}
+		}
+		function myLeft(img){
+			rot -=1;
+			if(rot === -1){
+				rot = 3;	
+			}
+			img.removeClass().addClass("rot"+rot);
+		}
+		img_turnright.click(function(){
+			var img = img_box.children("img");
+			myRight(img);
+			return false;
+		});
+		img_turnleft.click(function(){
+			var img = img_box.children("img");
+			myLeft(img);
+			return false;
+		});
+	});
+};
